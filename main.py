@@ -6,6 +6,7 @@ import argparse
 from typing import List
 from tqdm import tqdm
 
+
 class Entry:
     '''
     Объект класса Entry представляет запись с информацией о пользователе.
@@ -52,6 +53,7 @@ class Entry:
         self.worldview = dic['worldview']
         self.address = dic['address']
 
+
 class Validator:
     '''
     Объект класса Validator представляет валидатор записей.
@@ -80,7 +82,7 @@ class Validator:
         -------
           (List[List[str]], List[Entry]):
             Пара: cписок списков неверных записей по названиям ключей
-						и список верных записей
+                                                и список верных записей
         '''
 
         illegal_entries = []
@@ -141,7 +143,7 @@ class Validator:
           bool:
             Булевый результат проверки на корректность
         '''
-        pattern = "^(\+7[\-][(]\d{3}[)][\-]\d{3}[\-]\d{2}[\-]\d{2})$"
+        pattern = '^(\+7[\-][(]\d{3}[)][\-]\d{3}[\-]\d{2}[\-]\d{2})$'
         if re.match(pattern, telephone):
             return True
         return False
@@ -206,7 +208,6 @@ class Validator:
             return False
 
         return fheight > 1.20 and fheight < 2.10
-
 
     def check_work_experience(self, work_experience: str) -> bool:
         '''
@@ -310,6 +311,7 @@ class Validator:
             return True
         return False
 
+
 def show_summary(result: List[List[str]], filename: str = ''):
     '''
       Выдаёт итоговую информацию об ошибках в записях
@@ -321,15 +323,15 @@ def show_summary(result: List[List[str]], filename: str = ''):
 
     all_errors_count = 0
     errors_count = {
-        "telephone": 0,
-        "height": 0,
-        "snils": 0,
-        "passport_series": 0,
-        "university": 0,
-        "work_experience": 0,
-        "academic_degree": 0,
-        "worldview": 0,
-        "address": 0,
+        'telephone': 0,
+        'height': 0,
+        'snils': 0,
+        'passport_series': 0,
+        'university': 0,
+        'work_experience': 0,
+        'academic_degree': 0,
+        'worldview': 0,
+        'address': 0,
     }
 
     for i in result:
@@ -350,21 +352,54 @@ def show_summary(result: List[List[str]], filename: str = ''):
             for key, value in errors_count.items():
                 file.write(key + ': ' + str(value) + '\n')
 
+
+def save_in_json(data: List[Entry], filename: str):
+    '''
+        Выдаёт итоговую информацию о верных записях в формате json
+        Parameters
+        ----------
+          data : List[Entry]
+            Список верных записей
+          filename : str
+            Имя файла для записи
+    '''
+    f = open(filename, 'w')
+
+    f.write('[')
+
+    for i in data:
+        f.write('''
+    {
+      "telephone": "%s",
+      "height": %s,
+      "snils": "%s",
+      "passport_series": "%s",
+      "university": "%s",
+      "work_experience": %s,
+      "academic_degree": "%s",
+      "worldview": "%s",
+      "address": "%s",
+    },''' % (i.telephone, i.height, i.snils, i.passport_series, i.university, i.work_experience, i.academic_degree,
+             i.worldview, i.address))
+    f.write('\n]')
+    f.close()
+
+
 if len(sys.argv) < 2:
-  input_file = '36.txt'
-  output_file = '36_result.txt'
+    input_file = '36.txt'
+    output_file = '36_result.txt'
 else:
-  parser = argparse.ArgumentParser(
-      description='Make users\' entries validation.')
-  parser.add_argument('-input_file', metavar='input_file', nargs=1, type=str,
-                      help='input file name')
-  parser.add_argument('-output_file', metavar='output_file', nargs=1, type=str,
-                      help='output file name')
+    parser = argparse.ArgumentParser(
+        description='Make users\' entries validation.')
+    parser.add_argument('-input_file', metavar='input_file', nargs=1, type=str,
+                        help='input file name')
+    parser.add_argument('-output_file', metavar='output_file', nargs=1, type=str,
+                        help='output file name')
 
-  args = parser.parse_args()
+    args = parser.parse_args()
 
-  input_file = args.input_file[0]
-  output_file = args.output_file[0]
+    input_file = args.input_file[0]
+    output_file = args.output_file[0]
 
 val = Validator([])
 
@@ -378,3 +413,4 @@ with tqdm(total=100) as progressbar:
     progressbar.update(40)
 
     show_summary(res[0], output_file)
+    save_in_json(res[1], 'valid_data.txt')
